@@ -15,8 +15,6 @@ npm install -g db-backup
 pnpm add -g db-backup
 ```
 
-也可不安装，直接用 `npx` 运行。
-
 ## 用法
 
 先在项目根目录准备 `db-backup.yaml`，再执行对应命令：
@@ -44,25 +42,6 @@ npx --no-install restore-db --username restore_user --password 'secret'
 ```bash
 npx --no-install backup-db --help
 npx --no-install restore-db --help
-```
-
-## 定时任务（crontab）
-
-先全局安装，再编辑 crontab：
-
-```bash
-npm install -g db-backup
-crontab -e
-```
-
-示例：
-
-```cron
-# 每天凌晨 3 点备份数据库
-0 3 * * * npx --no-install backup-db >> /var/log/backup-db.log 2>&1
-
-# 每小时备份 binlog
-0 * * * * npx --no-install backup-binlog >> /var/log/backup-binlog.log 2>&1
 ```
 
 ## 配置
@@ -110,6 +89,25 @@ destination_local:
 #   # endpoint: https://oss-cn-hangzhou-internal.aliyuncs.com # 可选，自定义 endpoint
 #   # internal: true # 可选，使用内网 endpoint（ECS 同地域可省流量费）
 #   # dir: mysql-backup # 可选，对象目录前缀
+```
+
+## 定时任务（crontab）
+
+先全局安装，再编辑 crontab：
+
+```bash
+npm install -g db-backup
+crontab -e
+```
+
+示例：
+
+```cron
+# 每天凌晨 3 点备份数据库
+0 3 * * * npx --no-install backup-db >> /var/log/backup-db.log 2>&1
+
+# 每小时备份 binlog
+0 * * * * npx --no-install backup-binlog >> /var/log/backup-binlog.log 2>&1
 ```
 
 ## MySQL 账号权限
