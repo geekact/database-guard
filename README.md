@@ -1,6 +1,11 @@
 # db-backup
 
-数据库备份与还原工具，当前支持 MySQL。
+面向 MySQL 的备份与还原 CLI。
+
+- YAML 配置驱动
+- 全量 dump + binlog 增量
+- 本地保留策略，可选 AWS S3 上传
+- 支持对接 Docker 中的 MySQL 实例
 
 ## 安装
 
@@ -54,10 +59,10 @@ crontab -e
 
 ```cron
 # 每天凌晨 3 点备份数据库
-0 3 * * * npx backup-db >> /var/log/backup-db.log 2>&1
+0 3 * * * npx --no-install backup-db >> /var/log/backup-db.log 2>&1
 
 # 每小时备份 binlog
-0 * * * * npx backup-binlog >> /var/log/backup-binlog.log 2>&1
+0 * * * * npx --no-install backup-binlog >> /var/log/backup-binlog.log 2>&1
 ```
 
 ## 配置
@@ -65,6 +70,8 @@ crontab -e
 配置文件为 YAML，示例如下：
 
 ```yaml
+# db-backup.yaml
+
 database:
   driver: mysql # 目前仅支持 mysql
   host: 127.0.0.1 # 主机地址
@@ -97,18 +104,19 @@ destination_local:
 
 不建议用业务账号直接操作备份。可为备份/还原单独建用户，并按用途授权。
 
-### 全量备份（`backup-db`）
+### 备份（`backup-db` / `backup-binlog`）
 
-只备份表、视图与数据（不含触发器、事件、存储过程/函数）。目标库上至少需要：
+全量备份只导出表、视图与数据（不含触发器、事件、存储过程/函数）。建议一次性授予两类备份所需权限：
 
-| 权限                 | 用途                                                                    |
-| -------------------- | ----------------------------------------------------------------------- |
-| `SELECT`             | 导出表数据                                                              |
-| `SHOW VIEW`          | 导出视图                                                                |
-| `LOCK TABLES`        | dump 锁表相关                                                           |
-| `RELOAD`             | 配合 `--single-transaction` 一致性快照                                  |
-| `PROCESS`            | 部分服务器状态读取                                                      |
-| `REPLICATION CLIENT` | `--source-data` 读取 binlog 位点（MySQL 8.0.22+ 可用 `BINLOG MONITOR`） |
+| 权限                                    | 用途                                                                                                                                    |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `SELECT`                                | 导出表数据                                                                                                                              |
+| `SHOW VIEW`                             | 导出视图                                                                                                                                |
+| `LOCK TABLES`                           | dump 锁表相关                                                                                                                           |
+| `RELOAD`                                | `--single-transaction` 一致性快照；`FLUSH BINARY LOGS`                                                                                  |
+| `PROCESS`                               | 部分服务器状态读取                                                                                                                      |
+| `REPLICATION CLIENT` / `BINLOG MONITOR` | `--source-data` 读 binlog 位点；`SHOW BINARY LOGS` 等（MySQL 8.0.22+ 可用 `BINLOG MONITOR`）                                            |
+| `REPLICATION SLAVE`                     | 远程拉取 binlog（回退到 `mysqlbinlog --read-from-remote-server` 时；MySQL 8 也可能体现为 `REPLICATION_SLAVE_ADMIN` 等，以实际版本为准） |
 
 示例（把 `backup_db` 换成实际库名）：
 
@@ -117,36 +125,14 @@ CREATE USER 'backup_user'@'%' IDENTIFIED BY 'strong-password';
 
 GRANT SELECT, SHOW VIEW, LOCK TABLES ON backup_db.* TO 'backup_user'@'%';
 
-GRANT RELOAD, PROCESS, REPLICATION CLIENT ON *.* TO 'backup_user'@'%';
+GRANT RELOAD, PROCESS, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'backup_user'@'%';
 -- MySQL 8.0.22+ 可用 BINLOG MONITOR 替代 REPLICATION CLIENT：
--- GRANT RELOAD, PROCESS, BINLOG MONITOR ON *.* TO 'backup_user'@'%';
+-- GRANT RELOAD, PROCESS, BINLOG MONITOR, REPLICATION SLAVE ON *.* TO 'backup_user'@'%';
 
 FLUSH PRIVILEGES;
 ```
 
-### binlog 备份（`backup-binlog`）
-
-需要：
-
-| 权限                                    | 用途                                      |
-| --------------------------------------- | ----------------------------------------- |
-| `RELOAD`                                | `FLUSH BINARY LOGS`                       |
-| `REPLICATION CLIENT` / `BINLOG MONITOR` | `SHOW BINARY LOGS`、`SHOW VARIABLES` 相关 |
-
-若无法通过 Docker/`docker cp` 或文件系统直接拷贝 binlog，会回退到 `mysqlbinlog --read-from-remote-server`，这时还需要：
-
-| 权限                | 用途                                                                                           |
-| ------------------- | ---------------------------------------------------------------------------------------------- |
-| `REPLICATION SLAVE` | 远程拉取 binlog（MySQL 8 中也可能体现为 `REPLICATION_SLAVE_ADMIN` 等相关权限，以实际版本为准） |
-
-示例：
-
-```sql
-GRANT RELOAD, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'backup_user'@'%';
-FLUSH PRIVILEGES;
-```
-
-另外：服务器需开启 `log_bin`；若走文件拷贝，运行本工具的环境还要有读取 MySQL 数据目录（或对应 Docker 容器）中 binlog 文件的权限。
+另外：binlog 备份需服务器开启 `log_bin`；若走文件拷贝，运行本工具的环境还要有读取 MySQL 数据目录（或对应 Docker 容器）中 binlog 文件的权限。
 
 ### 还原（`restore-db`）
 
