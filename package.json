@@ -1,7 +1,10 @@
 {
   "name": "database-guard",
-  "version": "0.0.1",
-  "repository": "git@github.com:geekact/database-guard.git",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/geekact/database-guard.git"
+  },
   "author": "geekact",
   "license": "MIT",
   "type": "module",
@@ -10,10 +13,14 @@
     "prepublishOnly": "tsdown"
   },
   "packageManager": "pnpm@10.33.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "bin": {
-    "backup-db": "./dist/backup-db.mjs",
-    "backup-binlog": "./dist/backup-binlog.mjs",
-    "restore-db": "./dist/restore-db.mjs"
+    "backup-db": "dist/backup-db.mjs",
+    "backup-binlog": "dist/backup-binlog.mjs",
+    "restore-db": "dist/restore-db.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1093.0",
