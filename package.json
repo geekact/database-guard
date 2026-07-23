@@ -5,6 +5,9 @@
   "author": "geekact",
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "prepare": "npx husky"
+  },
   "bin": {
     "backup-db": "dist/backup-db.mjs",
     "backup-binlog": "dist/backup-binlog.mjs",
