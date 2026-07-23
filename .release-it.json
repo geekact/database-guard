@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/release-it/schema/release-it.json",
+  "git": {
+    "push": true,
+    "commitMessage": "chore: 发布版本 v${version}",
+    "requireBranch": "main"
+  },
+  "github": {
+    "release": true
+  },
+  "npm": {
+    "publish": true,
+    "tag": "latest"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "infile": "CHANGELOG.md"
+    }
+  }
+}
