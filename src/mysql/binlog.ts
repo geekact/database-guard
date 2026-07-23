@@ -1,7 +1,13 @@
 import { copyFile, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Config } from '../libs/read-config';
-import { buildExecCommand, mysqlConnectionArgs, mysqlQuery, runCommand, runDocker } from './helper.js';
+import {
+  buildExecCommand,
+  mysqlConnectionArgs,
+  mysqlQuery,
+  runCommand,
+  runDocker,
+} from './helper.js';
 
 const STATE_FILE = '.binlog-backup-state';
 export const BINLOG_FILE_SUFFIX = '.bin';

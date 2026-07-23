@@ -25,10 +25,7 @@ export type BinlogPosition = {
 };
 
 export type MysqlbinlogLocation =
-  | { kind: 'container' }
-  | { kind: 'host' }
-  | { kind: 'image'; image: string }
-  | { kind: 'none' };
+  { kind: 'container' } | { kind: 'host' } | { kind: 'image'; image: string } | { kind: 'none' };
 
 type SpawnCmd = {
   command: string;

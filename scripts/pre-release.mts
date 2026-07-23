@@ -6,9 +6,7 @@ import { styleText } from 'node:util';
 const gitBranch = execSync('git branch --show-current').toString().trim();
 
 if (gitBranch !== 'develop') {
-  console.log(
-    styleText('yellow', `Current branch is ${gitBranch}, skipping version update`),
-  );
+  console.log(styleText('yellow', `Current branch is ${gitBranch}, skipping version update`));
   process.exit(0);
 }
 

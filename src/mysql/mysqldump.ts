@@ -3,7 +3,12 @@ import { createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import type { Config } from '../libs/read-config';
-import { buildExecCommand, forwardMysqlStderr, mysqlConnectionArgs, waitForExit } from './helper.js';
+import {
+  buildExecCommand,
+  forwardMysqlStderr,
+  mysqlConnectionArgs,
+  waitForExit,
+} from './helper.js';
 import path from 'node:path';
 
 export const mysqldump = async (
