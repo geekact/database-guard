@@ -4,7 +4,7 @@
 
 - YAML 配置驱动
 - 全量 dump + binlog 增量
-- 本地保留策略，可选 AWS S3 上传
+- 本地保留策略，可选 AWS S3 / 阿里云 OSS 上传
 - 支持对接 Docker 中的 MySQL 实例
 
 ## 安装
@@ -91,12 +91,24 @@ destination_local:
   keep_days: 7
 
 # 可选：同时上传到 AWS S3
+# 注意：本工具不会清理远端对象，请在 Bucket 上配置生命周期规则按需过期删除
 # destination_aws_s3:
 #   access_key: YOUR_ACCESS_KEY # AWS Access Key
 #   secret_key: YOUR_SECRET_KEY # AWS Secret Key
 #   region: ap-northeast-1 # 区域
 #   bucket: my-backup-bucket # Bucket 名称
-#   # endpoint: https://endpoint # 可选，与ES2同一区域时建议设置为内网地址，免流量费
+#   # endpoint: https://endpoint # 可选，与 EC2 同一区域时建议设置为内网地址，免流量费
+#   # dir: mysql-backup # 可选，对象目录前缀
+
+# 可选：同时上传到阿里云 OSS
+# 注意：本工具不会清理远端对象，请在 Bucket 上配置生命周期规则按需过期删除
+# destination_aliyun_oss:
+#   access_key: YOUR_ACCESS_KEY # AccessKey ID
+#   secret_key: YOUR_SECRET_KEY # AccessKey Secret
+#   region: oss-cn-hangzhou # 区域，如 oss-cn-hangzhou
+#   bucket: my-backup-bucket # Bucket 名称
+#   # endpoint: https://oss-cn-hangzhou-internal.aliyuncs.com # 可选，自定义 endpoint
+#   # internal: true # 可选，使用内网 endpoint（ECS 同地域可省流量费）
 #   # dir: mysql-backup # 可选，对象目录前缀
 ```
 

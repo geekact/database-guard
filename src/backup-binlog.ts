@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
+import { uploadToOss } from './aliyun/upload-to-oss.js';
 import { uploadToS3 } from './aws/upload-to-s3.js';
 import { getVersion } from './libs/get-version.js';
 import { readConfig } from './libs/read-config.js';
@@ -30,6 +31,11 @@ program
     if (config.destination_aws_s3) {
       console.log('AWS S3 存储桶已配置，开始上传...');
       await uploadToS3(config.destination_aws_s3, files);
+    }
+
+    if (config.destination_aliyun_oss) {
+      console.log('阿里云 OSS 已配置，开始上传...');
+      await uploadToOss(config.destination_aliyun_oss, files);
     }
 
     console.log('备份结束！');

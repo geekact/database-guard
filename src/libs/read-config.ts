@@ -45,6 +45,17 @@ const ConfigSchema = z.object({
       dir: z.string().optional(),
     })
     .optional(),
+  destination_aliyun_oss: z
+    .object({
+      endpoint: z.string().optional(),
+      access_key: z.string({ error: 'destination_aliyun_oss.access_key 必填' }),
+      secret_key: z.string({ error: 'destination_aliyun_oss.secret_key 必填' }),
+      region: z.string({ error: 'destination_aliyun_oss.region 必填' }),
+      bucket: z.string({ error: 'destination_aliyun_oss.bucket 必填' }),
+      dir: z.string().optional(),
+      internal: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

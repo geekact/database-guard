@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
 import utc from 'dayjs/plugin/utc.js';
 import path from 'node:path';
+import { downloadFromOss } from './aliyun/download-from-oss.js';
 import { downloadFromS3 } from './aws/download-from-s3.js';
 import { getVersion } from './libs/get-version.js';
 import { askInput, askPassword, askSelect, askYesNo } from './libs/prompt.js';
@@ -62,8 +63,14 @@ program
     if (config.destination_aws_s3) {
       const shouldDownload = await askYesNo('从 AWS S3 恢复缺失的备份文件？', false);
       if (shouldDownload) {
-        console.log('开始从 S3 下载...');
         await downloadFromS3(config.destination_aws_s3, localDir);
+      }
+    }
+
+    if (config.destination_aliyun_oss) {
+      const shouldDownload = await askYesNo('从阿里云 OSS 恢复缺失的备份文件？', false);
+      if (shouldDownload) {
+        await downloadFromOss(config.destination_aliyun_oss, localDir);
       }
     }
 

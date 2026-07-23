@@ -7,6 +7,7 @@ import { mysqldump } from './mysql/mysqldump.js';
 import path from 'node:path';
 import dayjs from 'dayjs';
 import { mkdir } from 'node:fs/promises';
+import { uploadToOss } from './aliyun/upload-to-oss.js';
 import { uploadToS3 } from './aws/upload-to-s3.js';
 import { deleteOutdatedFiles } from './local/delete-outdated-files.js';
 
@@ -34,8 +35,13 @@ program
     await deleteOutdatedFiles(config, path.dirname(filename));
 
     if (config.destination_aws_s3) {
-      console.log(`AWS S3 存储桶已配置，开始上传...`);
+      console.log('AWS S3 存储桶已配置，开始上传...');
       await uploadToS3(config.destination_aws_s3, [filename]);
+    }
+
+    if (config.destination_aliyun_oss) {
+      console.log('阿里云 OSS 已配置，开始上传...');
+      await uploadToOss(config.destination_aliyun_oss, [filename]);
     }
 
     console.log('备份结束！');
