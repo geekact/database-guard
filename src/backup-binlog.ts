@@ -16,7 +16,7 @@ program
   .name('backup-binlog')
   .description('备份 MySQL binlog')
   .version(await getVersion())
-  .argument('[config]', '配置文件路径', 'db-backup.yaml')
+  .argument('[config]', '配置文件路径', 'database-guard.yaml')
   .action(async (configPath: string) => {
     const config = await readConfig(configPath);
 

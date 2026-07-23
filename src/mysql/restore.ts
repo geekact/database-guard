@@ -137,7 +137,7 @@ const decodeBinlogToSql = async (binlogCmd: SpawnCmd, sqlPath: string) => {
 /** 将本地 binlog 拷入容器临时目录，返回容器内路径 */
 const stageBinlogsInContainer = async (config: Config, localFiles: string[]) => {
   const container = config.system.docker_container_name!;
-  const remoteDir = `/tmp/db-backup-restore-${Date.now()}`;
+  const remoteDir = `/tmp/database-guard-restore-${Date.now()}`;
   const mkdirCmd = buildExecCommand(config, 'mkdir', ['-p', remoteDir]);
   await runCommand(mkdirCmd.command, mkdirCmd.args);
 
@@ -277,7 +277,7 @@ export const applyBinlogs = async (
             ? buildMysqlbinlogFromImage(config, location.image, localBinlogPath, programArgs, env)
             : { command: 'mysqlbinlog', args: [...programArgs, binlogPath], env };
 
-      const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'db-backup-binlog-'));
+      const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'database-guard-binlog-'));
       const sqlPath = path.join(tmpDir, `${name}.sql`);
       try {
         await decodeBinlogToSql(binlogCmd, sqlPath);

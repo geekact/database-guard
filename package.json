@@ -1,7 +1,7 @@
 {
-  "name": "db-backup",
+  "name": "database-guard",
   "version": "0.0.1",
-  "repository": "git@github.com:geekact/db-backup.git",
+  "repository": "git@github.com:geekact/database-guard.git",
   "author": "geekact",
   "license": "MIT",
   "type": "module",

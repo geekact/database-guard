@@ -17,7 +17,7 @@ program
   .name('backup-db')
   .description('备份数据库')
   .version(await getVersion())
-  .argument('[config]', '配置文件路径', 'db-backup.yaml')
+  .argument('[config]', '配置文件路径', 'database-guard.yaml')
   .action(async (configPath: string) => {
     const config = await readConfig(configPath);
 

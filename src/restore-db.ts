@@ -33,7 +33,7 @@ program
   .name('restore-db')
   .description('还原数据库')
   .version(await getVersion())
-  .argument('[config]', '配置文件路径', 'db-backup.yaml')
+  .argument('[config]', '配置文件路径', 'database-guard.yaml')
   .option('-u, --username <username>', '数据库用户名（覆盖配置文件）')
   .option('-p, --password <password>', '数据库密码（覆盖配置文件）')
   .action(async (configPath: string, options: RestoreOptions) => {

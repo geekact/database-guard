@@ -1,4 +1,4 @@
-# db-backup
+# database-guard
 
 面向 MySQL 的备份与还原 CLI。
 
@@ -10,17 +10,17 @@
 ## 安装
 
 ```bash
-npm install -g db-backup
+npm install -g database-guard
 # 或
-pnpm add -g db-backup
+pnpm add -g database-guard
 ```
 
 ## 用法
 
-先在项目根目录准备 `db-backup.yaml`，再执行对应命令：
+先在项目根目录准备 `database-guard.yaml`，再执行对应命令：
 
 ```bash
-# 数据库备份（默认读取 ./db-backup.yaml）
+# 数据库备份（默认读取 ./database-guard.yaml）
 npx --no-install backup-db
 npx --no-install backup-db ./my-config.yml
 
@@ -49,7 +49,7 @@ npx --no-install restore-db --help
 配置文件为 YAML，示例如下：
 
 ```yaml
-# db-backup.yaml
+# database-guard.yaml
 
 database:
   driver: mysql # 目前仅支持 mysql
@@ -66,7 +66,7 @@ database:
 
 # 本地备份
 destination_local:
-  dir: ./db-backup
+  dir: ./database-guard
   keep_days: 7
 
 # 可选：同时上传到 AWS S3
@@ -96,7 +96,7 @@ destination_local:
 先全局安装，再编辑 crontab：
 
 ```bash
-npm install -g db-backup
+npm install -g database-guard
 crontab -e
 ```
 

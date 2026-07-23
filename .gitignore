@@ -7,5 +7,5 @@ coverage/
 .DS_Store
 *.log
 logs/
-db-backup.yaml
-db-backup/
+database-guard.yaml
+database-guard/
