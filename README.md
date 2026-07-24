@@ -125,7 +125,7 @@ crontab -e
 | `LOCK TABLES`                           | dump 锁表相关                                                                                                                           |
 | `RELOAD`                                | `--single-transaction` 一致性快照；`FLUSH BINARY LOGS`                                                                                  |
 | `PROCESS`                               | 部分服务器状态读取                                                                                                                      |
-| `REPLICATION CLIENT` / `BINLOG MONITOR` | `--source-data` 读 binlog 位点；`SHOW BINARY LOGS` 等（MySQL 8.0.22+ 可用 `BINLOG MONITOR`）                                            |
+| `BINLOG MONITOR` / `REPLICATION CLIENT` | `--source-data` 读 binlog 位点；`SHOW BINARY LOGS` 等（MySQL 8.0.22+ 用 `BINLOG MONITOR`，更早版本用 `REPLICATION CLIENT`）             |
 | `REPLICATION SLAVE`                     | 远程拉取 binlog（回退到 `mysqlbinlog --read-from-remote-server` 时；MySQL 8 也可能体现为 `REPLICATION_SLAVE_ADMIN` 等，以实际版本为准） |
 
 示例（把 `backup_db` 换成实际库名）：
@@ -135,42 +135,48 @@ CREATE USER 'backup_user'@'%' IDENTIFIED BY 'strong-password';
 
 GRANT SELECT, SHOW VIEW, LOCK TABLES ON backup_db.* TO 'backup_user'@'%';
 
-GRANT RELOAD, PROCESS, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'backup_user'@'%';
--- MySQL 8.0.22+ 可用 BINLOG MONITOR 替代 REPLICATION CLIENT：
--- GRANT RELOAD, PROCESS, BINLOG MONITOR, REPLICATION SLAVE ON *.* TO 'backup_user'@'%';
+-- MySQL 8.0.22+
+GRANT RELOAD, PROCESS, BINLOG MONITOR, REPLICATION SLAVE ON *.* TO 'backup_user'@'%';
+-- MySQL 8.0.22 之前用 REPLICATION CLIENT 替代 BINLOG MONITOR：
+-- GRANT RELOAD, PROCESS, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'backup_user'@'%';
 
 FLUSH PRIVILEGES;
 ```
 
-另外：binlog 备份需服务器开启 `log_bin`；若走文件拷贝，运行本工具的环境还要有读取 MySQL 数据目录（或对应 Docker 容器）中 binlog 文件的权限。
+另外：binlog 备份需服务器开启 `log_bin`。可先确认：
+
+```sql
+SHOW VARIABLES LIKE 'log_bin';
+-- 值为 ON 表示已开启
+```
+
+若走文件拷贝，运行本工具的环境还要有读取 MySQL 数据目录（或对应 Docker 容器）中 binlog 文件的权限。
 
 ### 还原（`restore-db`）
 
 还原会向目标库导入 SQL，并可能执行 `SET sql_log_bin=0`。目标库上通常需要：
 
-| 权限                                       | 用途                                       |
-| ------------------------------------------ | ------------------------------------------ |
-| `CREATE` / `DROP` / `ALTER` / `INDEX`      | 建表、删表、改表                           |
-| `INSERT` / `UPDATE` / `DELETE`             | 导入数据                                   |
-| `REFERENCES`                               | 外键                                       |
-| `CREATE VIEW` / `SHOW VIEW`                | 视图                                       |
-| `SESSION_VARIABLES_ADMIN`（MySQL 8.0.14+） | `SET sql_log_bin=0`                        |
-| `SYSTEM_VARIABLES_ADMIN` 或 `SUPER`        | 同上（权限更大；MySQL 8.0 之前用 `SUPER`） |
+| 权限                                       | 用途                                  |
+| ------------------------------------------ | ------------------------------------- |
+| `CREATE` / `DROP` / `ALTER` / `INDEX`      | 建表、删表、改表                      |
+| `INSERT` / `UPDATE` / `DELETE`             | 导入数据                              |
+| `REFERENCES`                               | 外键                                  |
+| `CREATE VIEW` / `SHOW VIEW`                | 视图                                  |
+| `SESSION_VARIABLES_ADMIN`（MySQL 8.0.14+） | `SET sql_log_bin=0`（推荐，权限最小） |
+| `SYSTEM_VARIABLES_ADMIN`（MySQL 8.0+）     | 同上（权限更大，同属 8.0）            |
+| `SUPER`（MySQL 8.0 之前）                  | 同上                                  |
 
 示例（还原账号可与备份账号分开，把 `backup_db` 换成实际库名）：
 
 ```sql
 CREATE USER 'restore_user'@'%' IDENTIFIED BY 'strong-password';
 
-GRANT
-  SELECT, INSERT, UPDATE, DELETE,
-  CREATE, DROP, ALTER, INDEX, REFERENCES,
-  CREATE VIEW, SHOW VIEW
-ON backup_db.* TO 'restore_user'@'%';
+GRANT ALL PRIVILEGES ON backup_db.* TO 'restore_user'@'%';
 
--- 用于关闭还原过程中的 binlog 写入（MySQL 8.0.14+，权限最小）
+-- MySQL 8.0.14+（推荐，权限最小）
 GRANT SESSION_VARIABLES_ADMIN ON *.* TO 'restore_user'@'%';
--- 或：GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'restore_user'@'%';
+-- MySQL 8.0+ 也可用权限更大的：
+-- GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'restore_user'@'%';
 -- MySQL 8.0 之前：
 -- GRANT SUPER ON *.* TO 'restore_user'@'%';
 
